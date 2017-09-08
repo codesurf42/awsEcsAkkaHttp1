@@ -1,6 +1,4 @@
-package com.lightbend.akka.http.sample
-
-import akka.actor.{ Actor, ActorLogging, Props }
+package com.example.ecs1
 
 //#user-case-classes
 final case class User(name: String, age: Int, countryOfResidence: String)

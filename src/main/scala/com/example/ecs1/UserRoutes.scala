@@ -1,6 +1,6 @@
-package com.lightbend.akka.http.sample
+package com.example.ecs1
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
 
 import scala.concurrent.duration._
@@ -12,19 +12,20 @@ import akka.http.scaladsl.server.directives.MethodDirectives.get
 import akka.http.scaladsl.server.directives.MethodDirectives.post
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.http.scaladsl.server.directives.PathDirectives.path
+import com.example.ecs1.queue.QueuePutter
 
 import scala.concurrent.Future
 //import com.lightbend.akka.http.sample.UserRegistryActor._
 import akka.pattern.ask
 import akka.util.Timeout
-import com.lightbend.akka.http.sample.queue.QueuePutter
 import spray.json.{ JsNumber, JsObject, JsString }
 
 //#user-routes-class
-case class UserRoutes(putter: QueuePutter)(implicit system: ActorSystem) extends JsonSupport {
+//case class UserRoutes(putter: QueuePutter)(implicit system: ActorSystem) extends JsonSupport {
+case class UserRoutes(putter: QueuePutter) extends JsonSupport {
   //#user-routes-class
 
-  lazy val log = Logging(system, classOf[UserRoutes])
+//  lazy val log = Logging(system, classOf[UserRoutes])
 
   // Required by the `ask` (?) method below
   implicit lazy val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
@@ -46,6 +47,9 @@ case class UserRoutes(putter: QueuePutter)(implicit system: ActorSystem) extends
 
           }
         }
+      } ~
+      get {
+        complete("Ok non-rep")
       }
     } // ~
   //      pathPrefix("users") {

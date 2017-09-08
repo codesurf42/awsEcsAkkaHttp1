@@ -1,11 +1,10 @@
-package com.lightbend.akka.http.sample
+package com.example.ecs1
 
 //#test-top
-import akka.actor.ActorRef
-import akka.http.scaladsl.marshalling.{Marshal, Marshaller}
+import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.lightbend.akka.http.sample.queue.QueuePutter
+import com.example.ecs1.queue.QueuePutter
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 

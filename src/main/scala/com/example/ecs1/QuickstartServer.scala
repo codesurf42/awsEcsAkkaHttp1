@@ -1,22 +1,28 @@
-package com.lightbend.akka.http.sample
+package com.example.ecs1
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import com.example.ecs1.queue.QueuePutter
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.StdIn
 
 //#main-class
-case class QuickstartServer(userRoutes: UserRoutes) extends App {
+case class QuickstartServer(userRoutes: UserRoutes) {
 
   // set up ActorSystem and other dependencies here
   //#main-class
   //#server-bootstrapping
   implicit val system: ActorSystem = ActorSystem("helloAkkaHttpServer")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
+  val port = 9000
+
+  lazy val log = Logging(system, classOf[QuickstartServer])
   //#server-bootstrapping
 
   // Needed for the Future and its methods flatMap/onComplete in the end
@@ -30,19 +36,33 @@ case class QuickstartServer(userRoutes: UserRoutes) extends App {
   //#main-class
 
   //#http-server
-  val serverBindingFuture: Future[ServerBinding] = Http().bindAndHandle(routes, "localhost", 8080)
+  val serverBindingFuture: Future[ServerBinding] = Http().bindAndHandle(routes, "localhost", port)
 
-  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+  println(s"Server online at http://localhost:$port/\nPress RETURN to stop...")
 
   StdIn.readLine()
 
   serverBindingFuture
     .flatMap(_.unbind())
     .onComplete { done =>
-      done.failed.map { ex => userRoutes.log.error(ex, "Failed unbinding") }
+      done.failed.map { ex => log.error(ex, "Failed unbinding") }
       system.terminate()
     }
   //#http-server
   //#main-class
 }
 //#main-class
+
+
+object Main extends App {
+
+  val qs = QuickstartServer(UserRoutes(new StubPutter()))
+}
+
+class StubPutter extends QueuePutter {
+  val items = new ListBuffer[ApiPayload]
+  override def put(payload: ApiPayload): Future[MessageId] = {
+    items += payload
+    Future.successful(MessageId(items.size.toString))
+  }
+}

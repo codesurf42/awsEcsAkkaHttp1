@@ -1,7 +1,6 @@
-package com.lightbend.akka.http.sample
+package com.example.ecs1
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-//import com.lightbend.akka.http.sample.UserRegistryActor.ActionPerformed
 import spray.json.DefaultJsonProtocol
 
 trait JsonSupport extends SprayJsonSupport {

@@ -1,6 +1,6 @@
-package com.lightbend.akka.http.sample.queue
+package com.example.ecs1.queue
 
-import com.lightbend.akka.http.sample.{ApiPayload, MessageId}
+import com.example.ecs1.{ApiPayload, MessageId}
 
 import scala.concurrent.Future
 
