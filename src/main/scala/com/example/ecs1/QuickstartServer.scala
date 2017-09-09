@@ -35,21 +35,7 @@ case class QuickstartServer(userRoutes: UserRoutes) {
   lazy val routes: Route = userRoutes.userRoutes
   //#main-class
 
-  //#http-server
-  val serverBindingFuture: Future[ServerBinding] = Http().bindAndHandle(routes, "localhost", port)
-
-  println(s"Server online at http://localhost:$port/\nPress RETURN to stop...")
-
-  StdIn.readLine()
-
-  serverBindingFuture
-    .flatMap(_.unbind())
-    .onComplete { done =>
-      done.failed.map { ex => log.error(ex, "Failed unbinding") }
-      system.terminate()
-    }
-  //#http-server
-  //#main-class
+  Http().bindAndHandle(routes, "0.0.0.0", port)
 }
 //#main-class
 
