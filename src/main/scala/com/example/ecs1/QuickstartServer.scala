@@ -7,8 +7,9 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import com.amazonaws.regions.Regions
+import com.amazonaws.services.kinesis.AmazonKinesisClientBuilder
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
-import com.example.ecs1.queue.{QueuePutter, SQSQueuePutter}
+import com.example.ecs1.queue.{KinesisQueuePutter, QueuePutter, SQSQueuePutter}
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,14 +41,15 @@ case class QuickstartServer(userRoutes: UserRoutes)(implicit val system: ActorSy
 
 object Main extends App {
 
-  val clientBuilder = AmazonSQSClientBuilder.standard()
-  clientBuilder.withRegion(Regions.EU_WEST_2)
-  val sqs = clientBuilder.build()
+  val clientBuilder = AmazonKinesisClientBuilder.standard()
+  clientBuilder.setRegion(Regions.EU_WEST_2.getName)
+  val kinesis = clientBuilder.build()
 
   implicit val system: ActorSystem = ActorSystem("helloAkkaHttpServer")
   implicit val ec: ExecutionContext = system.dispatcher
 
-  val qs = QuickstartServer(UserRoutes(new SQSQueuePutter(sqs, System.getenv("SQS_QUEUE"))))
+  val qs = QuickstartServer(UserRoutes(new KinesisQueuePutter(kinesis, System.getenv("KINESIS_TOPIC"))))
+
 }
 
 class StubPutter extends QueuePutter {
