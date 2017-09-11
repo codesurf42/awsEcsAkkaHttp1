@@ -16,7 +16,10 @@ lazy val root = (project in file(".")).
 
       "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
       "org.scalatest"     %% "scalatest"         % "3.0.1"         % Test,
-      "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.192"
+      "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.192",
+
+      "org.slf4j" % "slf4j-api" % "1.7.21",
+      "ca.pjer" % "logback-awslogs-appender" % "0.1.1"
     )
   )
   enablePlugins(JavaAppPackaging)
