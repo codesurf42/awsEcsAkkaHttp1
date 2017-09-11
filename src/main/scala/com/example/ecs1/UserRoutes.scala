@@ -49,7 +49,7 @@ case class UserRoutes(putter: QueuePutter) extends JsonSupport {
         }
       } ~
       get {
-        complete("Ok non-rep")
+        complete("Ok NON-REP!!!!!")
       }
     } // ~
   //      pathPrefix("users") {
