@@ -6,27 +6,25 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import com.example.ecs1.queue.QueuePutter
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder
+import com.example.ecs1.queue.{QueuePutter, SQSQueuePutter}
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.StdIn
 
 //#main-class
-case class QuickstartServer(userRoutes: UserRoutes) {
+case class QuickstartServer(userRoutes: UserRoutes)(implicit val system: ActorSystem, ec: ExecutionContext) {
 
   // set up ActorSystem and other dependencies here
   //#main-class
   //#server-bootstrapping
-  implicit val system: ActorSystem = ActorSystem("helloAkkaHttpServer")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   val port = 9000
 
   lazy val log = Logging(system, classOf[QuickstartServer])
   //#server-bootstrapping
-
-  // Needed for the Future and its methods flatMap/onComplete in the end
-  implicit val executionContext: ExecutionContext = system.dispatcher
 
 //  val userRegistryActor: ActorRef = system.actorOf(UserRegistryActor.props, "userRegistryActor")
 
@@ -42,7 +40,14 @@ case class QuickstartServer(userRoutes: UserRoutes) {
 
 object Main extends App {
 
-  val qs = QuickstartServer(UserRoutes(new StubPutter()))
+  val clientBuilder = AmazonSQSClientBuilder.standard()
+  clientBuilder.withRegion(Regions.EU_WEST_2)
+  val sqs = clientBuilder.build()
+
+  implicit val system: ActorSystem = ActorSystem("helloAkkaHttpServer")
+  implicit val ec: ExecutionContext = system.dispatcher
+
+  val qs = QuickstartServer(UserRoutes(new SQSQueuePutter(sqs, System.getenv("SQS_QUEUE"))))
 }
 
 class StubPutter extends QueuePutter {

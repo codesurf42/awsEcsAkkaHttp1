@@ -14,7 +14,7 @@ import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.http.scaladsl.server.directives.PathDirectives.path
 import com.example.ecs1.queue.QueuePutter
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 //import com.lightbend.akka.http.sample.UserRegistryActor._
 import akka.pattern.ask
 import akka.util.Timeout
@@ -22,7 +22,7 @@ import spray.json.{ JsNumber, JsObject, JsString }
 
 //#user-routes-class
 //case class UserRoutes(putter: QueuePutter)(implicit system: ActorSystem) extends JsonSupport {
-case class UserRoutes(putter: QueuePutter) extends JsonSupport {
+case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extends JsonSupport {
   //#user-routes-class
 
 //  lazy val log = Logging(system, classOf[UserRoutes])
