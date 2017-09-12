@@ -6,8 +6,11 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Run the test and package the code...
-      - sbt universal:package-bin
+      - sbt assembly
   post_build:
     commands:
       - echo Build completed on `date`
+artifacts:
+  files:
+    - target/scala-2.12/akkaHttp-assembly-0.1-SNAPSHOT.jar
 

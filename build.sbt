@@ -23,4 +23,3 @@ lazy val root = (project in file(".")).
       "ca.pjer" % "logback-awslogs-appender" % "0.1.1"
     )
   )
-  enablePlugins(JavaAppPackaging)
