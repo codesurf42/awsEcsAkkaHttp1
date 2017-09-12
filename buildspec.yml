@@ -1,0 +1,13 @@
+
+
+version: 0.1
+phases:
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Run the test and package the code...
+      - sbt debian:packageBin
+  post_build:
+    commands:
+      - echo Build completed on `date`
+
