@@ -6,7 +6,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Run the test and package the code...
-      - sbt debian:packageBin
+      - sbt universal:package-bin
   post_build:
     commands:
       - echo Build completed on `date`
