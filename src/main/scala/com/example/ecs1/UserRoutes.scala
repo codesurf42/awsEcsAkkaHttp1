@@ -49,7 +49,7 @@ case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extend
         }
       } ~
       get {
-        complete("Ok NON-REP!!!!!")
+        complete("Ok non-rep.")
       }
     } // ~
   //      pathPrefix("users") {
