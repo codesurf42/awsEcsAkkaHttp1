@@ -7,7 +7,7 @@ phases:
       - echo Build started on `date`
       - echo Run the test and package the code...
       - sbt assembly
-      - aws s3 cp target/scala-2.12/akkaHttp-assembly-0.1-SNAPSHOT.jar s3://aws-ecs-akka-http1/akkaHttp-assembly-0.1-SNAPSHOT.jar
+      - aws s3 cp target/scala-2.12/akkaHttp-assembly-0.1-SNAPSHOT.jar s3://$JAR_ARTIFACT_BUCKET/$JAR_ARTIFACT_KEY
   post_build:
     commands:
       - echo Build completed on `date`
