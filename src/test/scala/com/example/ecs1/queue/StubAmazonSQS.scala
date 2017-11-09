@@ -89,4 +89,16 @@ class StubAmazonSQS extends AmazonSQS {
   override def changeMessageVisibility(queueUrl: String, receiptHandle: String, visibilityTimeout: Integer): ChangeMessageVisibilityResult = ???
 
   override def shutdown(): Unit = ???
+
+  override def untagQueue(untagQueueRequest: UntagQueueRequest) = ???
+
+  override def untagQueue(queueUrl: String, tagKeys: util.List[String]) = ???
+
+  override def tagQueue(tagQueueRequest: TagQueueRequest) = ???
+
+  override def tagQueue(queueUrl: String, tags: util.Map[String, String]) = ???
+
+  override def listQueueTags(listQueueTagsRequest: ListQueueTagsRequest) = ???
+
+  override def listQueueTags(queueUrl: String) = ???
 }
