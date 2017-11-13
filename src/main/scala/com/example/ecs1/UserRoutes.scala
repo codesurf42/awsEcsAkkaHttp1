@@ -34,24 +34,45 @@ case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extend
   //#users-get-post
   //#users-get-delete   
   lazy val userRoutes: Route =
-    pathPrefix("payload") {
-      post {
-        entity(as[ApiPayload]) { payload =>
-          val messageCreated = putter.put(payload)
-
-          onSuccess(messageCreated) { msgId =>
-            complete((StatusCodes.OK, JsObject(
-              "test" -> JsNumber(payload.data.length),
-              "messageId" -> JsString(msgId.data)
-            )))
-
+  pathPrefix("sessions") {
+    post {
+      complete(201, "## session created")
+    } ~ path(IntNumber) { sessionId =>
+      pathEndOrSingleSlash {
+        post {
+          // "submit metadata"
+          complete(201, s"## POST session $sessionId")
+        }
+      } ~ pathPrefix("payloads") {
+        path(IntNumber) { payloadId =>
+          put {
+            complete(s"## submit payload: payload=$payloadId")
           }
         }
-      } ~
-      get {
-        complete("Ok non-rep.................")
+      } ~ pathPrefix("complete") {
+        post {
+          complete("## session complete")
+        }
       }
-    } // ~
+    }
+  } ~ pathPrefix("payload") {
+    post {
+      entity(as[ApiPayload]) { payload =>
+        val messageCreated = putter.put(payload)
+
+        onSuccess(messageCreated) { msgId =>
+          complete((StatusCodes.OK, JsObject(
+            "test" -> JsNumber(payload.data.length),
+            "messageId" -> JsString(msgId.data)
+          )))
+
+        }
+      }
+    } ~
+      get {
+        complete("Ok nr.................")
+      }
+  } // ~
   //      pathPrefix("users") {
   //        concat(
   //          //#users-get-delete

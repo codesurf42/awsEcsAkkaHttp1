@@ -4,6 +4,7 @@ package com.example.ecs1
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import com.example.ecs1.model.SessionCreate
 import com.example.ecs1.queue.QueuePutter
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
@@ -29,25 +30,44 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
     }
   }
 
+  def stub1 = new {
+    val putter = new StubPutter
+    val userRoutesService = UserRoutes(putter)
+    val routes = userRoutesService.userRoutes
+  }
+
   //#set-up
 
-  "Non-rep routes" should {
+  "NR routes" should {
+
+    "open a session" in {
+      val s = stub1
+      val sessionCreateData = SessionCreate("bus123", "auth123", "sub1", Map("foo" -> "bar"))
+      import s.userRoutesService._
+
+      val sessionCreateEntity = Marshal(sessionCreateData).to[MessageEntity].futureValue
+      val request = Post("/sessions").withEntity(sessionCreateEntity)
+
+      request ~> s.routes ~> check {
+        status should ===(StatusCodes.Created)
+        entityAs[String] should include("session created")
+      }
+    }
+
     "takes json for request /payload" in {
-      val putter = new StubPutter
-      val userRoutesService = UserRoutes(putter)
-      val routes = userRoutesService.userRoutes
-      import userRoutesService._
+      val s = stub1
+      import s.userRoutesService._
 
       val tax = (Math.random() * 100000).toInt
       val apiData = ApiPayload(s"new tax: $tax")
       val apiEntity = Marshal(apiData).to[MessageEntity].futureValue
       val request = Post(uri = "/payload").withEntity(apiEntity)
 
-      request ~> routes ~> check {
+      request ~> s.routes ~> check {
         status should ===(StatusCodes.OK)
         contentType should ===(ContentTypes.`application/json`)
         entityAs[String] should include(apiData.data.length.toString)
-        putter.items should have size 1
+        s.putter.items should have size 1
       }
     }
   }
