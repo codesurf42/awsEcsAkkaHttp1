@@ -4,8 +4,10 @@ package com.example.ecs1
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.example.ecs1.model.SessionCreateRequest
+import com.example.ecs1.model.{SessionCreateRequest, SessionCreateResponse}
 import com.example.ecs1.queue.QueuePutter
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+import io.circe.generic.auto._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
@@ -21,6 +23,7 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
   // but we could "mock" it by implementing it in-place or by using a TestProbe() 
   //  override val userRegistryActor: ActorRef =
   //    system.actorOf(UserRegistryActor.props, "userRegistry")
+  
 
   class StubPutter extends QueuePutter {
     val items = new ListBuffer[ApiPayload]
@@ -43,7 +46,6 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
     "open a session" in {
       val s = stub1
       val sessionCreateData = SessionCreateRequest("bus123", "auth123", "sub1", Map("foo" -> "bar"))
-      import s.userRoutesService._
 
       val sessionCreateEntity = Marshal(sessionCreateData).to[MessageEntity].futureValue
       val request = Post("/sessions").withEntity(sessionCreateEntity)
@@ -51,18 +53,21 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
       request ~> s.routes ~> check {
         status should ===(StatusCodes.Created)
         header("location").get.toString should include("/sessions/ses123")
-        entityAs[String] should include(""""expires":"20""")
+        import io.circe.syntax._
+        responseAs[SessionCreateResponse].asJson.noSpaces should include(""""expires":"20""")
+//         responseAs[SessionCreateResponse] shouldBe SessionCreateResponse("foo")
       }
     }
 
     "takes json for request /payload" in {
       val s = stub1
-      import s.userRoutesService._
 
       val tax = (Math.random() * 100000).toInt
       val apiData = ApiPayload(s"new tax: $tax")
       val apiEntity = Marshal(apiData).to[MessageEntity].futureValue
       val request = Post(uri = "/payload").withEntity(apiEntity)
+
+      import akka.http.scaladsl.unmarshalling.Unmarshaller._
 
       request ~> s.routes ~> check {
         status should ===(StatusCodes.OK)

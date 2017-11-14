@@ -6,19 +6,16 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.MethodDirectives.{get, post}
 import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
+import akka.util.Timeout
 import com.example.ecs1.model.{SessionCreateRequest, SessionCreateResponse}
 import com.example.ecs1.queue.QueuePutter
+import io.circe.Json
 import org.joda.time.DateTime
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import akka.util.Timeout
-import spray.json.{JsNumber, JsObject, JsString}
 
-//#user-routes-class
-//case class UserRoutes(putter: QueuePutter)(implicit system: ActorSystem) extends JsonSupport {
 case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extends JsonSupport {
-  //#user-routes-class
 
 //  lazy val log = Logging(system, classOf[UserRoutes])
 
@@ -28,6 +25,8 @@ case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extend
   //#all-routes
   //#users-get-post
   //#users-get-delete
+  import io.circe.generic.auto._
+  
   lazy val userRoutes: Route =
   pathPrefix("sessions") {
     post {
@@ -62,10 +61,10 @@ case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extend
         val messageCreated = putter.put(payload)
 
         onSuccess(messageCreated) { msgId =>
-          complete((StatusCodes.OK, JsObject(
-            "test" -> JsNumber(payload.data.length),
-            "messageId" -> JsString(msgId.data)
-          )))
+          complete((StatusCodes.OK, Json.fromFields(Seq(
+            "test" -> Json.fromInt(payload.data.length),
+            "messageId" -> Json.fromString(msgId.data)
+          ))))
 
         }
       }
