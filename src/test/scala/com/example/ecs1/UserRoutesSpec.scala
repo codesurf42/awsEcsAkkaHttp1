@@ -4,7 +4,7 @@ package com.example.ecs1
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.example.ecs1.model.SessionCreate
+import com.example.ecs1.model.SessionCreateRequest
 import com.example.ecs1.queue.QueuePutter
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
@@ -42,7 +42,7 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
 
     "open a session" in {
       val s = stub1
-      val sessionCreateData = SessionCreate("bus123", "auth123", "sub1", Map("foo" -> "bar"))
+      val sessionCreateData = SessionCreateRequest("bus123", "auth123", "sub1", Map("foo" -> "bar"))
       import s.userRoutesService._
 
       val sessionCreateEntity = Marshal(sessionCreateData).to[MessageEntity].futureValue
@@ -50,7 +50,8 @@ class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with Scala
 
       request ~> s.routes ~> check {
         status should ===(StatusCodes.Created)
-        entityAs[String] should include("session created")
+        header("location").get.toString should include("/sessions/ses123")
+        entityAs[String] should include(""""expires":"20""")
       }
     }
 
