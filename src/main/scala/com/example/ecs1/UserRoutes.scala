@@ -1,29 +1,21 @@
 package com.example.ecs1
 
-import akka.actor.{ActorRef, ActorSystem}
-import akka.event.Logging
-
-import scala.concurrent.duration._
+import akka.http.scaladsl.model.{StatusCodes, headers}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.directives.MethodDirectives.delete
-import akka.http.scaladsl.server.directives.MethodDirectives.get
-import akka.http.scaladsl.server.directives.MethodDirectives.post
-import akka.http.scaladsl.server.directives.RouteDirectives.complete
+import akka.http.scaladsl.server.directives.MethodDirectives.{get, post}
 import akka.http.scaladsl.server.directives.PathDirectives.path
-import com.example.ecs1.queue.QueuePutter
-
-import scala.concurrent.{ExecutionContext, Future}
-//import com.lightbend.akka.http.sample.UserRegistryActor._
-import akka.pattern.ask
+import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.util.Timeout
-import spray.json.{ JsNumber, JsObject, JsString }
+import com.example.ecs1.model.{SessionCreateRequest, SessionCreateResponse}
+import com.example.ecs1.queue.QueuePutter
+import io.circe.Json
+import org.joda.time.DateTime
 
-//#user-routes-class
-//case class UserRoutes(putter: QueuePutter)(implicit system: ActorSystem) extends JsonSupport {
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+
 case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extends JsonSupport {
-  //#user-routes-class
 
 //  lazy val log = Logging(system, classOf[UserRoutes])
 
@@ -32,26 +24,55 @@ case class UserRoutes(putter: QueuePutter)(implicit ec: ExecutionContext) extend
 
   //#all-routes
   //#users-get-post
-  //#users-get-delete   
+  //#users-get-delete
+  import io.circe.generic.auto._
+  
   lazy val userRoutes: Route =
-    pathPrefix("payload") {
-      post {
-        entity(as[ApiPayload]) { payload =>
-          val messageCreated = putter.put(payload)
-
-          onSuccess(messageCreated) { msgId =>
-            complete((StatusCodes.OK, JsObject(
-              "test" -> JsNumber(payload.data.length),
-              "messageId" -> JsString(msgId.data)
-            )))
-
+  pathPrefix("sessions") {
+    post {
+      entity(as[SessionCreateRequest]) { input =>
+        complete(
+          201,
+          List(headers.Location("/sessions/ses123")),
+          // TODO: json lib
+          SessionCreateResponse(DateTime.now().plusHours(24).toString))
+      }
+    } ~ path(IntNumber) { sessionId =>
+      pathEndOrSingleSlash {
+        post {
+          // "submit metadata"
+          complete(201, s"## POST session $sessionId")
+        }
+      } ~ pathPrefix("payloads") {
+        path(IntNumber) { payloadId =>
+          put {
+            complete(s"## submit payload: payload=$payloadId")
           }
         }
-      } ~
-      get {
-        complete("Ok non-rep.................")
+      } ~ pathPrefix("complete") {
+        post {
+          complete("## session complete")
+        }
       }
-    } // ~
+    }
+  } ~ pathPrefix("payload") {
+    post {
+      entity(as[ApiPayload]) { payload =>
+        val messageCreated = putter.put(payload)
+
+        onSuccess(messageCreated) { msgId =>
+          complete((StatusCodes.OK, Json.fromFields(Seq(
+            "test" -> Json.fromInt(payload.data.length),
+            "messageId" -> Json.fromString(msgId.data)
+          ))))
+
+        }
+      }
+    } ~
+      get {
+        complete("Ok nr.................")
+      }
+  } // ~
   //      pathPrefix("users") {
   //        concat(
   //          //#users-get-delete

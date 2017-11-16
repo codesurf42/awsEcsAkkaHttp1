@@ -1,6 +1,7 @@
-lazy val akkaHttpVersion = "10.0.10"
-lazy val akkaVersion = "2.5.6"
-lazy val awsSdkVersion = "1.11.227"
+val akkaHttpVersion = "10.0.10"
+val akkaVersion = "2.5.6"
+val awsSdkVersion = "1.11.227"
+val circeVersion = "0.8.0"
 
 lazy val root = (project in file(".")).
   settings(
@@ -11,7 +12,6 @@ lazy val root = (project in file(".")).
     name := "akkaHttp",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-xml" % akkaHttpVersion,
       "com.typesafe.akka" %% "akka-stream" % akkaVersion,
 
@@ -21,6 +21,10 @@ lazy val root = (project in file(".")).
       "com.amazonaws" % "aws-java-sdk-kinesis" % awsSdkVersion,
 
       "org.slf4j" % "slf4j-api" % "1.7.25",
-      "ca.pjer" % "logback-awslogs-appender" % "1.0.0"
-    )
+      "ca.pjer" % "logback-awslogs-appender" % "1.0.0",
+      "de.heikoseeberger" %% "akka-http-circe" % "1.18.1",
+    ) ++ Seq("io.circe" %% "circe-core",
+      "io.circe" %% "circe-generic",
+      "io.circe" %% "circe-parser"
+    ).map(_ % circeVersion),
   )
